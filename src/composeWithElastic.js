@@ -6,6 +6,7 @@ import createSearchResolver from './resolvers/search';
 import createSearchConnectionResolver from './resolvers/searchConnection';
 import createFindByIdResolver from './resolvers/findById';
 import createUpdateByIdResolver from './resolvers/updateById';
+import createSuggestResolver from './resolvers/suggest';
 
 import type { ElasticMappingT } from './mappingConverter';
 
@@ -67,11 +68,13 @@ export function composeWithElastic(opts: composeWithElasticOptsT): TypeComposer 
   const searchConnectionR = createSearchConnectionResolver(searchR, opts);
   const findByIdR = createFindByIdResolver(fieldMap, sourceTC, opts);
   const updateByIdR = createUpdateByIdResolver(fieldMap, sourceTC, opts);
+  const suggestR = createSuggestResolver(fieldMap, sourceTC, opts);
 
   sourceTC.addResolver(searchR);
   sourceTC.addResolver(searchConnectionR);
   sourceTC.addResolver(findByIdR);
   sourceTC.addResolver(updateByIdR);
+  sourceTC.addResolver(suggestR);
 
   return sourceTC;
 }
