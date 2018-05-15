@@ -10,7 +10,7 @@ import { Resolver, TypeComposer } from 'graphql-compose';
 import type { ResolveParams } from 'graphql-compose';
 import type { FieldsMapByElasticType } from '../mappingConverter';
 import ElasticApiParser from '../ElasticApiParser';
-import { getFindByIdOutputTC } from '../types/FindByIdOutput';
+import { getSuggestOutputTC } from '../types/SuggestOutputTC';
 
 export type ElasticResolverOpts = {
   prefix?: ?string,
@@ -30,13 +30,15 @@ export default function createSuggestResolver(
     );
   }
 
+  if (!fieldMap.completion) {
+    throw new Error('Mapping for Resolver suggest() should contain `completion` field.');
+  }
+
   if (!sourceTC || sourceTC.constructor.name !== 'TypeComposer') {
     throw new Error('Second arg for Resolver suggest() should be instance of TypeComposer.');
   }
 
   const prefix = opts.prefix || 'Es';
-
-  // console.log(fieldMap);
 
   const parser = new ElasticApiParser({
     elasticClient: opts.elasticClient,
@@ -48,37 +50,38 @@ export default function createSuggestResolver(
     type: opts.elasticType,
   });
 
-  // console.log('FC: ', suggestFC);
-
-  // const argsConfigMap = {
-  //   id: 'String!',
-  // };
-
-  const type = getFindByIdOutputTC({ prefix, fieldMap, sourceTC });
+  const type = getSuggestOutputTC({ prefix, fieldMap, sourceTC });
 
   return new Resolver({
     type,
     name: 'suggest',
     kind: 'query',
-    // args: argsConfigMap,
+    args: { text: 'String!' },
     resolve: async (rp: ResolveParams<*, *>) => {
-      console.log('resolver worked', rp);
-      // const { source, args, context, info } = rp;
-      //
-      // if (!args.id) {
-      //   throw new Error(`Missed 'id' argument!`);
-      // }
-      //
-      // const res = await suggestFC.resolve(source, args, context, info);
-      // const { _index, _type, _id, _version, _source } = res || {};
-      //
-      // return {
-      //   _index,
-      //   _type,
-      //   _id,
-      //   _version,
-      //   ..._source,
-      // };
+      const { source, args, context, info } = rp;
+
+      args.body = {
+        suggest: {
+          university_suggest: {
+            text: 'ii',
+            completion: {
+              field: 'title_suggest',
+            },
+          },
+        },
+      };
+
+      delete args.text;
+      // args._source = true;
+      const res = await suggestFC.resolve(source, args, context, info);
+      const { _index, _type, _id, _version, _source } = res || {};
+      return {
+        _index,
+        _type,
+        _id,
+        _version,
+        ..._source,
+      };
     },
   });
 }
