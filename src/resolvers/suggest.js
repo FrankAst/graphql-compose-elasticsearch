@@ -3,6 +3,8 @@
 // https://qbox.io/blog/quick-and-dirty-autocomplete-with-elasticsearch-completion-suggest
 // https://engineering.skroutz.gr/blog/implementing-a-fuzzy-suggestion-mechanism/
 // https://gist.github.com/justinvw/5025854
+// http://rea.tech/implementing-autosuggest-in-elasticsearch/
+// https://stackoverflow.com/questions/48304499/elasticsearch-completion-suggester-not-working-with-whitespace-analyzer
 
 /* @flow */
 
@@ -34,6 +36,8 @@ export default function createSuggestResolver(
     throw new Error('Mapping for Resolver suggest() should contain `completion` field.');
   }
 
+  const suggestField = Object.keys(fieldMap.completion)[0];
+
   if (!sourceTC || sourceTC.constructor.name !== 'TypeComposer') {
     throw new Error('Second arg for Resolver suggest() should be instance of TypeComposer.');
   }
@@ -45,7 +49,7 @@ export default function createSuggestResolver(
     prefix,
   });
 
-  const suggestFC = parser.generateFieldConfig('search', {
+  const suggestFC = parser.generateFieldConfig('suggest', {
     index: opts.elasticIndex,
     type: opts.elasticType,
   });
@@ -53,42 +57,24 @@ export default function createSuggestResolver(
   const type = getSuggestOutputTC({ prefix, fieldMap, sourceTC });
 
   return new Resolver({
-    type,
+    type: [type],
     name: 'suggest',
     kind: 'query',
-    args: { text: 'String!' },
+    args: {
+      text: 'String!',
+    },
     resolve: async (rp: ResolveParams<*, *>) => {
       const { source, args, context, info } = rp;
-
-      // if (args && args.text) {
-      //   args.suggestText = args.text;
-      //   delete args.text;
-      // }
-      //
-      // args.suggestField = 'title_suggest';
-
-      args.body = {
-        suggest: {
-          title_suggest: {
-            text: 'i',
-            completion: {
-              field: 'title_suggest',
-            },
-          },
-        },
-      };
-
+      args.body = { suggest: { text: args.text, completion: { field: suggestField } } };
       delete args.text;
 
+      const response = [];
       const res = await suggestFC.resolve(source, args, context, info);
-      const { _index, _type, _id, _version, _source } = res || {};
-      return {
-        _index,
-        _type,
-        _id,
-        _version,
-        ..._source,
-      };
+      res.suggest[0].options.forEach(i => {
+        const { _index, _type, _id, _score, _source } = i || {};
+        response.push({ _index, _type, _id, _score, ..._source });
+      });
+      return response;
     },
   });
 }

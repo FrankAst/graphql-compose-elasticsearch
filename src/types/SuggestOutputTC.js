@@ -14,11 +14,18 @@ export type SuggestOptsT = {
 export function getSuggestOutputTC(opts: SuggestOptsT): TypeComposer {
   const name = getTypeName('SuggestOutput', opts);
   const { sourceTC } = opts || {};
+  const sourceFields = sourceTC.getFields();
+  delete sourceFields.title_suggest;
   return getOrSetType(name, () =>
     TypeComposer.create({
       name,
       fields: {
-        ...sourceTC.getFields(),
+        _index: 'String',
+        _type: 'String',
+        _id: 'String',
+        _score: 'Float',
+        title_suggest: 'JSON',
+        ...sourceFields,
       },
     })
   );
