@@ -306,15 +306,13 @@ export default class ElasticApiParser {
           );
         }
 
-        console.log(`mrthod args: `, methodArgs);
-        console.log(`just args: `, args);
-
         if (Array.isArray(elasticMethod)) {
           return client[elasticMethod[0]][elasticMethod[1]]({
             ...methodArgs,
             ...args,
           });
         }
+        console.log({ ...methodArgs, ...args });
         client[elasticMethod]({ ...methodArgs, ...args }).then(r => console.dir(`res: `, r));
       },
     };

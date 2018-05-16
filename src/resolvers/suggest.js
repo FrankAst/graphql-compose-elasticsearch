@@ -60,10 +60,17 @@ export default function createSuggestResolver(
     resolve: async (rp: ResolveParams<*, *>) => {
       const { source, args, context, info } = rp;
 
+      // if (args && args.text) {
+      //   args.suggestText = args.text;
+      //   delete args.text;
+      // }
+      //
+      // args.suggestField = 'title_suggest';
+
       args.body = {
         suggest: {
-          university_suggest: {
-            text: 'ii',
+          title_suggest: {
+            text: 'i',
             completion: {
               field: 'title_suggest',
             },
@@ -72,7 +79,7 @@ export default function createSuggestResolver(
       };
 
       delete args.text;
-      // args._source = true;
+
       const res = await suggestFC.resolve(source, args, context, info);
       const { _index, _type, _id, _version, _source } = res || {};
       return {
