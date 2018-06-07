@@ -9,18 +9,20 @@ export const elsaticClient = new elasticsearch.Client({
   log: 'trace',
 });
 
-const body = [];
-seedData.forEach(row => {
-  const { id, ...restData } = row;
-  body.push({ index: { _index: 'demo_user', _type: 'demo_user', _id: id } }, restData);
+seedData.forEach(doc => {
+  console.log(`================>`, doc);
+  // elsaticClient
+  //   .suggest({
+  //     index: 'university',
+  //     type: 'university',
+  //     body: {
+  //       text: doc.title,
+  //       mySuggestion: {
+  //         completion: 'title_suggest',
+  //       },
+  //     },
+  //   })
+  //   .then(() => {
+  //     console.log(`${doc.id} successfully seeded!`);
+  //   });
 });
-
-elsaticClient
-  .bulk({
-    index: 'demo_user',
-    type: 'demo_user',
-    body,
-  })
-  .then(() => {
-    console.log('Data successfully seeded!');
-  });

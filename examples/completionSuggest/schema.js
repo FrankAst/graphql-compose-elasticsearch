@@ -1,128 +1,40 @@
 /* @flow */
 
-import { graphql, TypeComposer } from 'graphql-compose';
-import { elsaticClient } from './';
+import { graphql } from 'graphql-compose';
+import { elasticClient } from './';
 import { composeWithElastic, elasticApiFieldConfig } from '../../src'; // from 'graphql-compose-elasticsearch';
 
 const { GraphQLSchema, GraphQLObjectType } = graphql;
 
-const demoUserMapping = {
-  properties: {
-    name: {
-      type: 'text',
-      fields: {
-        keyword: {
-          type: 'keyword',
-        },
-      },
-    },
-    gender: {
-      type: 'text',
-    },
-    birthday: {
-      type: 'date',
-    },
-    position: {
-      type: 'text',
-    },
-    relocation: {
-      type: 'boolean',
-    },
-    salary: {
-      properties: {
-        currency: {
-          type: 'text',
-        },
-        total: {
-          type: 'double',
-        },
-      },
-    },
-    skills: {
-      type: 'text',
-    },
-    languages: {
-      type: 'keyword',
-    },
-    location: {
-      properties: {
-        name: {
-          type: 'text',
-        },
-        point: {
-          type: 'geo_point',
-        },
-      },
-    },
-    experience: {
-      properties: {
-        company: {
-          type: 'text',
-        },
-        description: {
-          type: 'text',
-        },
-        end: {
-          type: 'date',
-        },
-        position: {
-          type: 'text',
-        },
-        start: {
-          type: 'date',
-        },
-        tillNow: {
-          type: 'boolean',
-        },
-      },
-    },
-    createdAt: {
-      type: 'date',
-    },
+export const universityMapping = {
+  title: { type: 'text' },
+  title_suggest: {
+    type: 'completion',
+    analyzer: 'simple',
+    preserve_separators: true,
+    preserve_position_increments: true,
+    max_input_length: 50,
   },
 };
 
-const UserEsTC = composeWithElastic({
-  graphqlTypeName: 'UserES',
-  elasticIndex: 'demo_user',
-  elasticType: 'demo_user',
-  elasticMapping: demoUserMapping,
-  elasticClient: elsaticClient,
-  // elastic mapping does not contain information about is fields are arrays or not
-  // so provide this information explicitly for obtaining correct types in GraphQL
-  pluralFields: ['skills', 'languages'],
-});
-
-const ProxyTC = TypeComposer.create(`type ProxyDebugType { source: JSON }`);
-ProxyTC.addResolver({
-  name: 'showArgs',
-  kind: 'query',
-  args: {
-    source: 'JSON',
+export const UniversityEsTC = composeWithElastic({
+  graphqlTypeName: 'UniversityEsTC',
+  elasticIndex: 'university',
+  elasticType: 'university',
+  elasticMapping: {
+    properties: universityMapping,
   },
-  type: 'ProxyDebugType',
-  resolve: ({ args }) => args,
-});
-
-UserEsTC.addRelation('showRelationArguments', {
-  resolver: () => ProxyTC.getResolver('showArgs'),
-  prepareArgs: {
-    source: source => source,
-  },
-  projection: {
-    name: true,
-    salary: true,
-  },
+  elasticClient,
 });
 
 const schema = new GraphQLSchema({
   query: new GraphQLObjectType({
     name: 'Query',
     fields: {
-      userSearch: UserEsTC.getResolver('search').getFieldConfig(),
-      userSearchConnection: UserEsTC.getResolver('searchConnection').getFieldConfig(),
-      elastic50: elasticApiFieldConfig({
-        host: 'http://user:pass@localhost:9200',
+      search: UniversityEsTC.getResolver('search'),
+      searchConnection: UniversityEsTC.getResolver('searchConnection'),
+      elastic: elasticApiFieldConfig({
+        host: 'http://localhost:9200',
         apiVersion: '5.0',
         log: 'trace',
       }),
