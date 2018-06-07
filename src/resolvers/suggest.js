@@ -36,14 +36,12 @@ export default function createSuggestResolver(
     throw new Error('Mapping for Resolver suggest() should contain `completion` field.');
   }
 
-  const suggestField = Object.keys(fieldMap.completion)[0];
-
   if (!sourceTC || sourceTC.constructor.name !== 'TypeComposer') {
     throw new Error('Second arg for Resolver suggest() should be instance of TypeComposer.');
   }
 
+  const suggestField = Object.keys(fieldMap.completion)[0];
   const prefix = opts.prefix || 'Es';
-
   const parser = new ElasticApiParser({
     elasticClient: opts.elasticClient,
     prefix,
