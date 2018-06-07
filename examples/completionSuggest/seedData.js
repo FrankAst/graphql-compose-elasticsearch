@@ -3,8 +3,9 @@
 import elasticsearch from 'elasticsearch';
 import seedData from './seedData.json';
 
-const client = new elasticsearch.Client({
-  host: 'localhost:9200',
+export const elsaticClient = new elasticsearch.Client({
+  host: 'http://localhost:9200',
+  apiVersion: '5.0',
   log: 'trace',
 });
 
@@ -14,7 +15,7 @@ seedData.forEach(row => {
   body.push({ index: { _index: 'demo_user', _type: 'demo_user', _id: id } }, restData);
 });
 
-client
+elsaticClient
   .bulk({
     index: 'demo_user',
     type: 'demo_user',

@@ -76,6 +76,8 @@
     "demo1": "yarn demo1:seed && nodemon -e js --ignore *test* --exec ./node_modules/.bin/babel-node ./examples/elastic50/index.js",
     "demo1:seed": "./node_modules/.bin/babel-node ./examples/elastic50/seedData.js",
     "demo2": "nodemon -e js --ignore *test* --exec ./node_modules/.bin/babel-node ./examples/differentVersions/index.js",
+    "demo3": "yarn demo3:seed && ./node_modules/.bin/babel-node ./examples/completionSuggest/index.js",
+    "demo3:seed": "./node_modules/.bin/babel-node ./examples/completionSuggest/seedData.js",
     "watch": "jest --watch",
     "coverage": "jest --coverage",
     "lint": "eslint --ext .js ./src",
@@ -86,8 +88,6 @@
     "docker:v2": "node ./scripts/docker/start 2 & wait",
     "docker:v5": "node ./scripts/docker/start 5 & wait",
     "link": "yarn build && yarn link graphql-compose && yarn link",
-    "unlink": "yarn unlink graphql-compose && yarn add graphql-compose",
-    "my-demo": "./node_modules/.bin/babel-node ./__fixtures__/index.js",
-    "my-demo-watch": "nodemon ./__fixtures__/index.js --exec babel-node"
+    "unlink": "yarn unlink graphql-compose && yarn add graphql-compose"
   }
 }

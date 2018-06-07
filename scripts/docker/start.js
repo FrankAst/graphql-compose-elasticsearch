@@ -7,9 +7,7 @@ const dockerImageName = 'elasticsearch-nodkz';
 const version = process.argv[2] || 5;
 
 function isDockerImageExists(imageNameWithTag) {
-  const imageId = cp
-    .execSync(`docker images -q ${imageNameWithTag}`, { cwd: '.' })
-    .toString();
+  const imageId = cp.execSync(`docker images -q ${imageNameWithTag}`, { cwd: '.' }).toString();
   return imageId && imageId.length > 0;
 }
 
