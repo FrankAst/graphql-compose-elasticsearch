@@ -4,8 +4,11 @@
 import express from 'express';
 import graphqlHTTP from 'express-graphql';
 import schema from './schema';
+import putDataToElastic from './seedData';
 
 const PORT = 8090;
+
+putDataToElastic();
 
 const server = express();
 server.use(

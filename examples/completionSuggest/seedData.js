@@ -1,28 +1,50 @@
 /* @flow */
+/* eslint-disable camelcase, no-console */
 
-import elasticsearch from 'elasticsearch';
+import { elasticMapping, elasticClient, elasticIndex, elasticType } from './schema';
 import seedData from './seedData.json';
 
-export const elsaticClient = new elasticsearch.Client({
-  host: 'http://localhost:9200',
-  apiVersion: '5.0',
-  log: 'trace',
-});
+export default async function putDataToElastic() {
+  const isIndexExist = await elasticClient.indices.exists({ index: elasticIndex });
 
-seedData.forEach(doc => {
-  console.log(`================>`, doc);
-  // elsaticClient
-  //   .suggest({
-  //     index: 'university',
-  //     type: 'university',
-  //     body: {
-  //       text: doc.title,
-  //       mySuggestion: {
-  //         completion: 'title_suggest',
-  //       },
-  //     },
-  //   })
-  //   .then(() => {
-  //     console.log(`${doc.id} successfully seeded!`);
-  //   });
-});
+  if (!isIndexExist) {
+    await elasticClient.indices.create({
+      index: elasticIndex,
+      body: {
+        settings: {
+          number_of_shards: 1,
+        },
+        mappings: {
+          [elasticType]: {
+            ...elasticMapping,
+          },
+        },
+      },
+    });
+  }
+
+  seedData.forEach(async doc => {
+    const { id, title, title_suggest } = doc || {};
+
+    const isDocExist = await elasticClient.exists({
+      index: elasticIndex,
+      type: elasticType,
+      id,
+    });
+
+    if (!isDocExist) {
+      await elasticClient.create({
+        index: elasticIndex,
+        type: elasticType,
+        id,
+        body: {
+          title,
+          title_suggest,
+        },
+      });
+      console.log(`doc with id: ${doc.id} successfully seeded!`);
+    } else {
+      console.log(`doc with id: ${doc.id} already exist`);
+    }
+  });
+}
