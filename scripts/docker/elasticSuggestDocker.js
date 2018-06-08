@@ -34,12 +34,12 @@ export function runDockerContainer() {
   });
 }
 
-export function onExit() {
+export function stopDockerContainer() {
   cp.execSync(`docker stop ${containerName}`, { stdio: [0, 1, 2] });
   // cp.execSync(`docker rmi -f ${dockerImageName}`, { stdio: [0, 1, 2] });
   // cp.execSync(`docker rmi -f elasticsearch:5-alpine`, { stdio: [0, 1, 2] });
   process.exit(0);
 }
 
-process.on('SIGINT', onExit); // catch ctrl-c
-process.on('SIGTERM', onExit); // catch kill
+process.on('SIGINT', stopDockerContainer); // catch ctrl-c
+process.on('SIGTERM', stopDockerContainer); // catch kill

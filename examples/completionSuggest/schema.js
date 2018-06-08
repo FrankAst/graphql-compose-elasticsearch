@@ -42,6 +42,7 @@ const schema = new GraphQLSchema({
       search: UniversityEsTC.getResolver('search').getFieldConfig(),
       searchConnection: UniversityEsTC.getResolver('searchConnection').getFieldConfig(),
       suggest: UniversityEsTC.getResolver('suggest').getFieldConfig(),
+      insertSuggest: UniversityEsTC.getResolver('insertSuggest').getFieldConfig(),
       elastic: elasticApiFieldConfig({
         host: 'http://localhost:9200',
         apiVersion: '5.0',
